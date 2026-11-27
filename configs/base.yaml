@@ -1,0 +1,76 @@
+experiment:
+  esm_mode: frozen
+  tag: mhgrl_paper
+ligand:
+  type: chemberta
+  models:
+  - ChemBERTa
+  model_name: DeepChem/ChemBERTa-77M-MTR
+  mode: frozen
+  pool: cls
+  max_len: 512
+  out_dim: 384
+  proj_cfg:
+    type: identity
+  dtype: bfloat16
+  hf_cache_dir: hf_cache
+  cache_in_memory: true
+  cache_path: data_processed_esm/chemberta_cache/chemberta77M_mtr_mlen512_clspool.h5
+protein:
+  type: prott5
+  model_name: Rostlab/prot_t5_xl_half_uniref50-enc
+  hidden_size: 1024
+  pool: residue_mean
+  max_len: 512
+  out_dim: 1024
+  proj_cfg:
+    type: identity
+  dtype: bfloat16
+  hf_cache_dir: hf_cache
+  cache_in_memory: true
+  cache_path: data_processed_esm/esm_cache/prott5_u50_mlen512_residue_meanpool.h5
+plitext:
+  enabled: true
+  n_shells: 60
+  n_pairs: 168
+  features_path: features_residue/paper/residue_N60_paper.npz
+  scaler_path: features_residue/paper/scalers/train_only/{split}/residue_N60_scaler_{split}_fold{repeat}.npz
+fusion:
+  type: paper_mhgrl
+  hidden_dim: 256
+  n_layers: 3
+  n_heads: 4
+  k: 5
+  dropout: 0.1
+  ffn_mult: 2
+  topology_mode: dynamic
+training:
+  batch_size_train: 64
+  batch_size_eval: 128
+  lr: 5.0e-05
+  weight_decay: 1.0e-05
+  epochs: 200
+  early_stop_patience: 30
+  n_repeats: 5
+  num_workers: 2
+  pin_memory: true
+  persistent_workers: false
+  amp_dtype: none
+  checkpoint_mode: final_best_only
+  device: cuda:0
+  scheduler:
+    name: none
+  ema:
+    enabled: false
+  loss:
+    type: mse_only
+  result_std_ddof: 1
+  seed_sequence:
+  - 43
+  - 44
+  - 46
+  - 50
+  - 58
+  required_external_counts:
+    CASF: 285
+    CSAR: 80
